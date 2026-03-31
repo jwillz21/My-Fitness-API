@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Exercise {
+  id                Int       @id @default(autoincrement())
+  name              String
+  difficulty        String?
+  posture           String?
+  grip              String?
+  loadPosition      String?
+  movementPattern1  String?
+  movementPattern2  String?
+  planeOfMotion     String?
+  bodyRegion        String?
+  forceType         String?
+  mechanics         String?
+  classification    String?
+
+  muscles           ExerciseMuscle[]
+  equipment         ExerciseEquipment[]
+
+  createdAt         DateTime @default(now())
+  workoutExercises WorkoutExercise[]
+}
+
+model Muscle {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  exercises ExerciseMuscle[]
+}
+
+model ExerciseMuscle {
+  exercise   Exercise @relation(fields: [exerciseId], references: [id])
+  exerciseId Int
+
+  muscle     Muscle   @relation(fields: [muscleId], references: [id])
+  muscleId   Int
+
+  type       String   // primary | secondary
+
+  @@id([exerciseId, muscleId])
+}
+
+model Equipment {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  exercises ExerciseEquipment[]
+}
+
+model ExerciseEquipment {
+  exercise   Exercise @relation(fields: [exerciseId], references: [id])
+  exerciseId Int
+
+  equipment  Equipment @relation(fields: [equipmentId], references: [id])
+  equipmentId Int
+
+  @@id([exerciseId, equipmentId])
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String
+  workouts  Workout[]
+  createdAt DateTime  @default(now())
+}
+
+model Workout {
+  id        Int       @id @default(autoincrement())
+  name      String
+  user      User      @relation(fields: [userId], references: [id])
+  userId    Int
+  exercises WorkoutExercise[]
+  createdAt DateTime  @default(now())
+}
+
+model WorkoutExercise {
+  id         Int      @id @default(autoincrement())
+  workout    Workout  @relation(fields: [workoutId], references: [id])
+  workoutId  Int
+
+  exercise   Exercise @relation(fields: [exerciseId], references: [id])
+  exerciseId Int
+
+  sets       Int?
+  reps       Int?
+  orderIndex Int?
+}
